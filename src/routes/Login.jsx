@@ -1,52 +1,75 @@
-import React, {useEffect, useState} from "react"
-import axios from "axios"
-import { useNavigate, Link } from "react-router-dom"
+import Home from '../routes/Home'
+import { useNavigate } from 'react-router-dom'; // Step 1: Import useNavigate
+import {BrowserRouter as Router,Routes,Route }from'react-router-dom';
 
+// src/App.js
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-export default function Login(){
-  const history = useNavigate();
+const App = () => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [token, setToken] = useState(localStorage.getItem('token'));
+    const [profile, setProfile] = useState(null);
+    const navigate = useNavigate(); // Step 2: Initialize useNavigate
+   
 
-  const [email, setEmail]=useState('')
-  const [password, setPassword]=useState('')
+    const handleLogin = async () => {
+        try {
+            const response = await axios.post('http://localhost:5000/login', { username, password });
+            setToken(response.data.token);
+            localStorage.setItem('token', response.data.token);
+            alert('Logged in successfully');
+            navigate('/Home'); // Step 3: Navigate to login page
 
-
-  async function submit(e){
-    e.preventDefault();
-
-
-    try{
-      await axios.post("http://localhost:5173/",{
-        email,password
-      })
-      .then(res => {
-        if(res.data="exist"){
-          history("/home")
+        } catch (error) {
+            alert('Invalid credentials');
         }
-      })
-    }
-    catch(e){
-      console.log(e)
-    }
-  }
+    };
 
-  return(
-    <>
-        <div className="Login">
-          <h1>Login</h1>
-          <form action="POST">
-            <input type="email" onChange={(e) => {setEmail(e.target.value)}} name="Email" id="" className="border" placeholder="Email" />
+  
 
-            <input type="password" onChange={(e) => {setPassword(e.target.value)}} name="Password" id="" className="border" placeholder="Password"/>
+    useEffect(() => {
+        const fetchProfile = async () => {
+            if (token) {
+                try {
+                    const response = await axios.get('http://localhost:5000/profile', {
+                        headers: { Authorization: token }
+                    });
+                    setProfile(response.data);
+                } catch (error) {
+                    console.error('Error fetching profile');
+                }
+            }
+        };
+        fetchProfile();
+    }, [token]);
 
-          <input type="submit" onclick={submit} />
-
-          </form>
-          <br/>
-          <p> OR </p>
-          <br/>
-          <Link to="/Signup">Signup Page</Link>
-
+    return (
+        <div>
+            <h1>Auth Demo</h1>
+            <div>
+                <input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                />
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+                
+                <button onClick={handleLogin}>Login</button>
+              
+            </div>
+            <div>
+                Don't have an account? <a href="/Signup">Register</a>
+            </div>
         </div>
-    </>
-  )
-}
+    );
+};
+
+export default App;

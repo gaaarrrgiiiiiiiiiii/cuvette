@@ -5,7 +5,8 @@ export default function App() {
   return (
     <>
     
-    <Login/>
+    New to Cuvette? <a href="/Signup">Register</a>
+    Already have an account? <a href="/Login">Login</a>
 
     
 
